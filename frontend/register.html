@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register – ZeroHungerSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .success-phone-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+      background: rgba(74,222,128,0.08);
+      border: 1px solid rgba(74,222,128,0.25);
+      border-radius: 10px;
+      padding: 0.85rem 1.25rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+      color: var(--accent-3);
+      flex-wrap: wrap;
+    }
+    .success-phone-box strong {
+      color: var(--accent);
+      font-size: 1.05rem;
+    }
+    .success-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Zero<span>Hunger</span>Sync</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="register.html" class="active">Register</a></li>
+      <li><a href="community.html">Community</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <li><a href="ngos.html">NGOs</a></li>
+    </ul>
+    <div class="nav-toggle" onclick="toggleNav()">☰</div>
+  </nav>
+
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <span class="section-tag">Join the Network</span>
+      <h1>Register</h1>
+      <p>Join as a Food Donor or NGO and start making a difference today.</p>
+    </div>
+  </section>
+
+  <section class="register-section">
+    <div class="container">
+
+      <div class="role-selector">
+        <button class="role-btn active" id="btn-donor" onclick="selectRole('donor')">
+          🍱 Food Donor
+        </button>
+        <button class="role-btn" id="btn-ngo" onclick="selectRole('ngo')">
+          🏠 NGO
+        </button>
+      </div>
+
+      <!-- Registration Form -->
+      <div class="register-form-wrap">
+        <form id="register-form" class="register-form" onsubmit="handleRegister(event)">
+          <input type="hidden" id="role-input" value="donor"/>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Full Name / Organization Name</label>
+              <input type="text" id="name" placeholder="e.g. Sunrise Catering" required/>
+            </div>
+            <div class="form-group">
+              <label for="contact">Contact Number</label>
+              <input type="tel" id="contact" placeholder="10-digit mobile number" maxlength="10"
+                oninput="this.value=this.value.replace(/\D/g,'')" required/>
+            </div>
+          </div>
+
+          <!-- Donor-only fields -->
+          <div id="donor-fields">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="foodType">Food Type</label>
+                <input type="text" id="foodType" placeholder="e.g. Rice & Curry, Biryani…"/>
+              </div>
+              <div class="form-group">
+                <label for="quantity">Quantity (nos)</label>
+                <input type="number" id="quantity" min="1" step="1" placeholder="e.g. 10"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="goodTill">Good Till (Expiry Date &amp; Time)</label>
+              <input type="datetime-local" id="goodTill"/>
+            </div>
+          </div>
+
+          <div class="form-group location-group">
+            <label>Location</label>
+            <div class="location-row">
+              <input type="number" id="lat" placeholder="Latitude"  step="any" required/>
+              <input type="number" id="lng" placeholder="Longitude" step="any" required/>
+              <button type="button" class="btn-geo" onclick="detectLocation()">📍 Auto-detect</button>
+            </div>
+            <div id="location-status" class="location-status"></div>
+          </div>
+
+          <div id="form-msg" class="form-msg hidden"></div>
+
+          <button type="submit" class="btn-primary btn-submit" id="submit-btn">
+            <span id="btn-text">Register Now</span>
+            <div class="btn-loader hidden" id="btn-loader"></div>
+          </button>
+        </form>
+      </div>
+
+      <!-- ── Success Card (no ID shown) ── -->
+      <div id="success-card" class="success-card hidden">
+        <div class="success-icon" id="success-emoji">✅</div>
+        <h2 id="success-title">Registration Successful!</h2>
+        <p id="success-msg" style="color:var(--text-muted);margin-bottom:1.25rem;"></p>
+
+        <div class="success-phone-box">
+          <span>📱 Notifications will be sent to</span>
+          <strong id="success-phone"></strong>
+        </div>
+
+        <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.25rem;">
+          Use your phone number anytime to check notifications.
+        </p>
+
+        <div class="success-actions">
+          <a href="notifications.html" class="btn-primary">🔔 View Notifications</a>
+          <a href="community.html"     class="btn-outline">👥 Community</a>
+          <button onclick="resetForm()"  class="btn-outline">+ Register Another</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-brand">Zero<span>Hunger</span>Sync</div>
+    <p>Connecting surplus food with hungry hearts.</p>
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="register.html">Register</a>
+      <a href="community.html">Community</a>
+      <a href="ngos.html">NGOs</a>
+    </div>
+    <p class="footer-copy">© 2026 ZeroHungerSync. Built to fight hunger.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    let currentRole = 'donor';
+
+    function selectRole(role) {
+      currentRole = role;
+      document.getElementById('role-input').value = role;
+      document.getElementById('btn-donor').classList.toggle('active', role === 'donor');
+      document.getElementById('btn-ngo').classList.toggle('active',   role === 'ngo');
+      document.getElementById('donor-fields').style.display = role === 'donor' ? 'block' : 'none';
+    }
+
+    function detectLocation() {
+      const status = document.getElementById('location-status');
+      status.textContent = '⏳ Detecting your location…';
+      status.className   = 'location-status detecting';
+      if (!navigator.geolocation) {
+        status.textContent = '❌ Geolocation not supported.';
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          document.getElementById('lat').value = pos.coords.latitude.toFixed(6);
+          document.getElementById('lng').value = pos.coords.longitude.toFixed(6);
+          status.textContent = `✅ Location detected: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+          status.className   = 'location-status success';
+        },
+        () => {
+          status.textContent = '❌ Could not detect. Please enter manually.';
+          status.className   = 'location-status error';
+        }
+      );
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submit-btn');
+      const btnText   = document.getElementById('btn-text');
+      const loader    = document.getElementById('btn-loader');
+      const msgEl     = document.getElementById('form-msg');
+      const contact   = document.getElementById('contact').value.trim();
+
+      // Validate phone
+      if (contact.length !== 10) {
+        msgEl.textContent = '❌ Please enter a valid 10-digit mobile number.';
+        msgEl.className   = 'form-msg error';
+        msgEl.classList.remove('hidden');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      btnText.textContent = 'Registering…';
+      loader.classList.remove('hidden');
+      msgEl.classList.add('hidden');
+
+      const payload = {
+        name:    document.getElementById('name').value.trim(),
+        contact,
+        role:    currentRole,
+        location: {
+          lat: parseFloat(document.getElementById('lat').value) || null,
+          lng: parseFloat(document.getElementById('lng').value) || null
+        }
+      };
+
+      if (currentRole === 'donor') {
+        payload.foodType = document.getElementById('foodType').value;
+        payload.quantity = parseFloat(document.getElementById('quantity').value) || null;
+        payload.goodTill = document.getElementById('goodTill').value || null;
+      }
+
+      try {
+        const res = await apiFetch('/api/users/register', {
+          method: 'POST',
+          body:   JSON.stringify(payload)
+        });
+
+        // Save phone to localStorage so notifications page auto-fills it
+        localStorage.setItem('zhs_phone', contact);
+        localStorage.setItem('zhs_user_role', currentRole);
+
+        // Show success card — NO ID shown
+        document.getElementById('register-form').classList.add('hidden');
+        const card = document.getElementById('success-card');
+        card.classList.remove('hidden');
+
+        if (currentRole === 'donor') {
+          document.getElementById('success-emoji').textContent = '🎉';
+          document.getElementById('success-title').textContent = 'Food Donation Listed!';
+          document.getElementById('success-msg').textContent   =
+            `${payload.quantity || 0} nos of ${payload.foodType || 'food'} is now AVAILABLE. All registered NGOs have been notified!`;
+        } else {
+          document.getElementById('success-emoji').textContent = '🏠';
+          document.getElementById('success-title').textContent = 'NGO Registered!';
+          document.getElementById('success-msg').textContent   =
+            `${payload.name} is now in the network and will receive SMS alerts when food is available.`;
+        }
+
+        document.getElementById('success-phone').textContent = '+91 ' + contact;
+
+      } catch (err) {
+        msgEl.textContent = '❌ Registration failed: ' + (err.message || 'Server error');
+        msgEl.className   = 'form-msg error';
+        msgEl.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled  = false;
+        btnText.textContent = 'Register Now';
+        loader.classList.add('hidden');
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('success-card').classList.add('hidden');
+      document.getElementById('register-form').classList.remove('hidden');
+      document.getElementById('register-form').reset();
+      document.getElementById('location-status').textContent = '';
+    }
+  </script>
+</body>
+</html>

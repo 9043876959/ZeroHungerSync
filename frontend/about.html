@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About – ZeroHungerSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Zero<span>Hunger</span>Sync</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html" class="active">About</a></li>
+      <li><a href="register.html">Register</a></li>
+      <li><a href="community.html">Community</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <li><a href="ngos.html">NGOs</a></li>
+    </ul>
+    <div class="nav-toggle" onclick="toggleNav()">☰</div>
+  </nav>
+
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <span class="section-tag">Our Mission</span>
+      <h1>About ZeroHungerSync</h1>
+      <p>A platform built to ensure no meal goes to waste while someone goes hungry.</p>
+    </div>
+  </section>
+
+  <section class="about-content">
+    <div class="container">
+
+      <div class="about-block">
+        <div class="about-icon-big">🌍</div>
+        <div class="about-text">
+          <h2>The Problem We're Solving</h2>
+          <p>Every year, one-third of all food produced globally is wasted — approximately 1.3 billion tonnes. Simultaneously, over 800 million people go to bed hungry every night. This paradox is one of the most critical humanitarian challenges of our time.</p>
+          <p>ZeroHungerSync was created to bridge this gap using technology, real-time coordination, and community-driven action.</p>
+        </div>
+      </div>
+
+      <div class="about-stats-row">
+        <div class="about-stat-card">
+          <div class="big-num">1.3B</div>
+          <div class="big-label">Tonnes of food wasted annually</div>
+        </div>
+        <div class="about-stat-card highlight">
+          <div class="big-num">800M+</div>
+          <div class="big-label">People facing food insecurity</div>
+        </div>
+        <div class="about-stat-card">
+          <div class="big-num">30%</div>
+          <div class="big-label">Of food production lost to waste</div>
+        </div>
+      </div>
+
+      <div class="about-block reverse">
+        <div class="about-icon-big">🔄</div>
+        <div class="about-text">
+          <h2>How We Reduce Food Waste</h2>
+          <p>ZeroHungerSync provides a real-time coordination layer between food donors (restaurants, households, caterers, farms) and NGOs who distribute food to those in need.</p>
+          <ul class="about-list">
+            <li>📍 Location-based matching ensures food reaches the nearest NGO</li>
+            <li>⏰ Expiry tracking prevents collection of unsafe food</li>
+            <li>🔒 Lock-based acceptance prevents duplicate pickups</li>
+            <li>🔔 Instant notifications ensure rapid response</li>
+            <li>📊 Full audit trails for accountability</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="about-block">
+        <div class="about-icon-big">🤝</div>
+        <div class="about-text">
+          <h2>How Donors & NGOs Collaborate</h2>
+          <p>The collaboration model is simple but powerful:</p>
+          <div class="collab-flow">
+            <div class="collab-step">
+              <div class="collab-icon">👨‍🍳</div>
+              <strong>Donor registers</strong>
+              <span>Lists surplus food with quantity, type, location, and expiry</span>
+            </div>
+            <div class="collab-arrow">→</div>
+            <div class="collab-step">
+              <div class="collab-icon">📡</div>
+              <strong>System alerts</strong>
+              <span>All registered NGOs receive notifications with distance info</span>
+            </div>
+            <div class="collab-arrow">→</div>
+            <div class="collab-step">
+              <div class="collab-icon">🏠</div>
+              <strong>NGO accepts</strong>
+              <span>First NGO to accept locks the food; donor is notified immediately</span>
+            </div>
+            <div class="collab-arrow">→</div>
+            <div class="collab-step">
+              <div class="collab-icon">❤️</div>
+              <strong>Food delivered</strong>
+              <span>NGO picks up and distributes to those in need</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-values">
+        <h2>Our Values</h2>
+        <div class="values-grid">
+          <div class="value-card">
+            <span>⚡</span>
+            <h3>Speed</h3>
+            <p>Real-time notifications and instant lock mechanisms ensure food is collected before it expires.</p>
+          </div>
+          <div class="value-card">
+            <span>🔐</span>
+            <h3>Trust</h3>
+            <p>All user records are preserved permanently for accountability, even after deletion.</p>
+          </div>
+          <div class="value-card">
+            <span>🌐</span>
+            <h3>Transparency</h3>
+            <p>Community network page keeps everyone informed about active donors and NGOs.</p>
+          </div>
+          <div class="value-card">
+            <span>💚</span>
+            <h3>Impact</h3>
+            <p>Every kilogram rescued is a meal served, a family fed, and waste reduced.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-inner">
+      <h2>Be Part of the Solution</h2>
+      <p>Register as a donor or NGO and join the movement against food waste.</p>
+      <a href="register.html" class="btn-primary btn-large">Get Started</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-brand">Zero<span>Hunger</span>Sync</div>
+    <p>Connecting surplus food with hungry hearts.</p>
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="register.html">Register</a>
+      <a href="community.html">Community</a>
+      <a href="ngos.html">NGOs</a>
+    </div>
+    <p class="footer-copy">© 2026 ZeroHungerSync. Built to fight hunger.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

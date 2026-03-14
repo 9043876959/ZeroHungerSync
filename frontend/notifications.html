@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notifications – ZeroHungerSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .phone-login-card {
+      max-width: 440px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      text-align: center;
+    }
+    .login-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .phone-login-card h2 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .phone-login-card p  { color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+    .phone-input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .phone-input-wrap:focus-within { border-color: var(--accent); }
+    .phone-prefix {
+      padding: 0 1rem;
+      font-size: 1rem;
+      color: var(--text-muted);
+      border-right: 1px solid var(--border);
+      height: 52px;
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      flex-shrink: 0;
+      font-weight: 600;
+    }
+    .phone-input-wrap input {
+      flex: 1;
+      padding: 0.9rem 1rem;
+      background: transparent;
+      color: var(--text);
+      border: none;
+      font-family: var(--font-body);
+      font-size: 1.1rem;
+      outline: none;
+      letter-spacing: 2px;
+    }
+    .phone-input-wrap input::placeholder { color: var(--text-dim); letter-spacing: 0; font-size: 0.95rem; }
+    .login-error { color: var(--accent-red); font-size: 0.85rem; margin-bottom: 0.75rem; min-height: 1.2rem; }
+
+    .notif-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .notif-user-info { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+    .notif-role-badge {
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.25rem 0.8rem;
+      border-radius: 6px;
+      background: rgba(74,222,128,0.12);
+      color: var(--accent);
+    }
+    .notif-user-name  { font-weight: 700; font-size: 1rem; }
+    .notif-user-phone { color: var(--text-dim); font-size: 0.85rem; }
+    .notif-actions { display: flex; gap: 0.5rem; }
+
+    .live-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      margin-bottom: 1.25rem;
+    }
+    .pulse-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-right: 5px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
+
+    .section-label {
+      display: inline-block;
+      padding: 0.45rem 1.2rem;
+      background: rgba(74,222,128,0.1);
+      color: var(--accent);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+    }
+
+    .notif-list { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .notif-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .notif-card.expired  { opacity: 0.45; }
+    .notif-card.accepted { border-left: 4px solid var(--accent); }
+    .notif-card.pending  { border-left: 4px solid var(--accent-warm); }
+    .notif-card.confirm  { border-left: 4px solid var(--accent); background: rgba(74,222,128,0.02); }
+
+    .notif-card-top {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1.25rem 1.5rem;
+    }
+    .notif-icon  { font-size: 2rem; flex-shrink: 0; }
+    .notif-meta  { flex: 1; }
+    .notif-title { font-weight: 600; margin-bottom: 0.2rem; font-size: 0.98rem; }
+    .notif-time  { font-size: 0.78rem; color: var(--text-dim); }
+
+    .notif-badge {
+      flex-shrink: 0;
+      padding: 0.22rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      align-self: flex-start;
+    }
+    .badge-pending  { background: rgba(251,191,36,0.15);  color: var(--accent-warm); }
+    .badge-accepted { background: rgba(74,222,128,0.15);  color: var(--accent); }
+    .badge-expired  { background: rgba(120,120,120,0.12); color: var(--text-dim); }
+
+    .notif-body { padding: 0 1.5rem 1.25rem; }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.6rem;
+    }
+    .dg {
+      background: var(--bg-2);
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+    .dg span   { font-size: 0.7rem; color: var(--text-dim); }
+    .dg strong { font-size: 0.88rem; }
+
+    .confirm-msg {
+      background: rgba(74,222,128,0.06);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      font-size: 0.93rem;
+      color: var(--accent-3);
+      margin-bottom: 1rem;
+      line-height: 1.65;
+    }
+
+    .notif-footer {
+      padding: 0.9rem 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .done-msg { color: var(--text-muted); font-size: 0.88rem; }
+
+    .empty-box {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-muted);
+    }
+    .empty-box .e-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .empty-box h3 { font-family: var(--font-display); margin-bottom: 0.5rem; }
+    .empty-box p  { font-size: 0.88rem; color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Zero<span>Hunger</span>Sync</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="register.html">Register</a></li>
+      <li><a href="community.html">Community</a></li>
+      <li><a href="notifications.html" class="active">Notifications</a></li>
+      <li><a href="ngos.html">NGOs</a></li>
+    </ul>
+    <div class="nav-toggle" onclick="toggleNav()">☰</div>
+  </nav>
+
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <span class="section-tag">Live Alerts</span>
+      <h1>Notifications</h1>
+      <p>Enter your registered phone number to see your alerts.</p>
+    </div>
+  </section>
+
+  <section class="notifications-section">
+    <div class="container">
+
+      <!-- ── Phone Login ── -->
+      <div id="login-view">
+        <div class="phone-login-card">
+          <div class="login-icon">📱</div>
+          <h2>Check Your Notifications</h2>
+          <p>Enter the mobile number you used when registering.</p>
+
+          <div class="phone-input-wrap">
+            <div class="phone-prefix">🇮🇳 +91</div>
+            <input
+              type="tel"
+              id="phone-input"
+              maxlength="10"
+              placeholder="Enter 10-digit number"
+              oninput="this.value=this.value.replace(/\D/g,'')"
+              onkeydown="if(event.key==='Enter') doLogin()"
+            />
+          </div>
+
+          <div class="login-error" id="login-error"></div>
+
+          <button class="btn-primary" style="width:100%;justify-content:center;padding:0.9rem;font-size:1rem" onclick="doLogin()">
+            View Notifications →
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Notifications View ── -->
+      <div id="notif-view" class="hidden">
+
+        <div class="notif-header-bar">
+          <div class="notif-user-info">
+            <span class="notif-role-badge" id="role-badge"></span>
+            <span class="notif-user-name"  id="user-name"></span>
+            <span class="notif-user-phone" id="user-phone"></span>
+          </div>
+          <div class="notif-actions">
+            <button onclick="doRefresh()" class="btn-outline btn-sm">🔄 Refresh</button>
+            <button onclick="doLogout()"  class="btn-outline btn-sm">← Switch</button>
+          </div>
+        </div>
+
+        <div class="live-bar">
+          <span><span class="pulse-dot"></span>Auto-refreshes every 15 seconds</span>
+          <span id="refresh-time"></span>
+        </div>
+
+        <div id="section-label" class="section-label"></div>
+        <div id="notif-list"   class="notif-list">
+          <div class="loading-state"><div class="spinner"></div><p>Loading…</p></div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-brand">Zero<span>Hunger</span>Sync</div>
+    <p>Connecting surplus food with hungry hearts.</p>
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="register.html">Register</a>
+      <a href="community.html">Community</a>
+      <a href="ngos.html">NGOs</a>
+    </div>
+    <p class="footer-copy">© 2026 ZeroHungerSync. Built to fight hunger.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    let currentUser  = null;
+    let pollTimer    = null;
+
+    // ── Login ──
+    async function doLogin() {
+      const phone = document.getElementById('phone-input').value.trim();
+      const errEl = document.getElementById('login-error');
+      errEl.textContent = '';
+
+      if (phone.length !== 10) {
+        errEl.textContent = '❌ Please enter a valid 10-digit number.';
+        return;
+      }
+
+      errEl.textContent = '⏳ Looking up your account…';
+
+      try {
+        const res = await apiFetch(`/api/notifications/by-phone/${phone}`);
+        currentUser = res.user;
+        localStorage.setItem('zhs_phone', phone);
+
+        // Show notification panel
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('notif-view').classList.remove('hidden');
+
+        document.getElementById('role-badge').textContent  = currentUser.role === 'ngo' ? '🏠 NGO' : '🍱 Food Donor';
+        document.getElementById('user-name').textContent   = currentUser.name;
+        document.getElementById('user-phone').textContent  = '· +91 ' + phone;
+        document.getElementById('section-label').textContent =
+          currentUser.role === 'ngo' ? '🔔 Food Alerts for You' : '📬 Your Acceptance Confirmations';
+
+        renderNotifications(res.notifications);
+
+        // Auto-poll
+        if (pollTimer) clearInterval(pollTimer);
+        pollTimer = setInterval(doRefresh, 15000);
+
+      } catch (e) {
+        if (e.message.includes('404') || e.message.includes('not found')) {
+          errEl.textContent = '❌ No account found with this number. Please register first.';
+        } else {
+          errEl.textContent = '❌ Could not connect to server. Make sure backend is running.';
+        }
+      }
+    }
+
+    // ── Refresh ──
+    async function doRefresh() {
+      if (!currentUser) return;
+      try {
+        const phone = localStorage.getItem('zhs_phone');
+        const res   = await apiFetch(`/api/notifications/by-phone/${phone}`);
+        renderNotifications(res.notifications);
+        document.getElementById('refresh-time').textContent =
+          'Updated ' + new Date().toLocaleTimeString('en-IN');
+      } catch (e) {
+        console.warn('Refresh failed:', e.message);
+      }
+    }
+
+    // ── Render ──
+    function renderNotifications(notifs) {
+      const list = document.getElementById('notif-list');
+
+      if (!notifs || notifs.length === 0) {
+        if (currentUser.role === 'ngo') {
+          list.innerHTML = `
+            <div class="empty-box">
+              <div class="e-icon">🔔</div>
+              <h3>No Food Alerts Yet</h3>
+              <p>When a donor registers food, you will see it here immediately.<br/>Make sure donors are registered in the system.</p>
+            </div>`;
+        } else {
+          list.innerHTML = `
+            <div class="empty-box">
+              <div class="e-icon">📬</div>
+              <h3>No Confirmations Yet</h3>
+              <p>When an NGO accepts your food donation, you will see the details here.</p>
+            </div>`;
+        }
+        return;
+      }
+
+      if (currentUser.role === 'ngo') {
+        renderNGOCards(notifs, list);
+      } else {
+        renderDonorCards(notifs, list);
+      }
+    }
+
+    // ── NGO cards ──
+    function renderNGOCards(notifs, list) {
+      list.innerHTML = notifs.map(n => {
+        const donor      = n.donorId;
+        const isExpired  = n.status === 'EXPIRED';
+        const isAccepted = n.status === 'ACCEPTED';
+        const expiryStr  = donor?.goodTill
+          ? new Date(donor.goodTill).toLocaleString('en-IN', { dateStyle:'short', timeStyle:'short' })
+          : 'Not set';
+        const statusClass = isAccepted ? 'accepted' : isExpired ? 'expired' : 'pending';
+        const badgeClass  = isAccepted ? 'badge-accepted' : isExpired ? 'badge-expired' : 'badge-pending';
+
+        return `
+        <div class="notif-card ${statusClass}">
+          <div class="notif-card-top">
+            <div class="notif-icon">🍱</div>
+            <div class="notif-meta">
+              <div class="notif-title">Food from <strong>${donor?.name || 'Unknown Donor'}</strong></div>
+              <div class="notif-time">${new Date(n.createdAt).toLocaleString('en-IN')}</div>
+            </div>
+            <span class="notif-badge ${badgeClass}">${n.status}</span>
+          </div>
+          <div class="notif-body">
+            <div class="detail-grid">
+              <div class="dg"><span>🥘 Food Type</span><strong>${donor?.foodType || 'Not specified'}</strong></div>
+              <div class="dg"><span>⚖️ Quantity</span><strong>${n.quantity || 0} nos</strong></div>
+              <div class="dg"><span>📍 Distance</span><strong>${n.distance != null ? n.distance + ' km' : 'N/A'}</strong></div>
+              <div class="dg"><span>⏰ Expires</span><strong>${expiryStr}</strong></div>
+              <div class="dg"><span>📞 Donor Contact</span><strong>${donor?.contact || 'N/A'}</strong></div>
+              <div class="dg"><span>🗺️ Location</span><strong>${donor?.location?.lat ? Number(donor.location.lat).toFixed(4)+', '+Number(donor.location.lng).toFixed(4) : 'N/A'}</strong></div>
+            </div>
+          </div>
+          <div class="notif-footer">
+            ${!isExpired && !isAccepted
+              ? `<button class="btn-accept" onclick="acceptFood('${n._id}','${donor?._id}')">✅ Accept Food</button>
+                 <span style="font-size:0.8rem;color:var(--text-dim)">First to accept gets it!</span>`
+              : `<span class="done-msg">${isAccepted ? '✅ You accepted this donation' : '⛔ No longer available'}</span>`
+            }
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Donor cards ──
+    function renderDonorCards(notifs, list) {
+      list.innerHTML = notifs.map(n => {
+        const ngo = n.ngoId;
+        return `
+        <div class="notif-card confirm">
+          <div class="notif-card-top">
+            <div class="notif-icon">🎉</div>
+            <div class="notif-meta">
+              <div class="notif-title">Accepted by <strong>${ngo?.name || 'An NGO'}</strong></div>
+              <div class="notif-time">${new Date(n.createdAt).toLocaleString('en-IN')}</div>
+            </div>
+            <span class="notif-badge badge-accepted">ACCEPTED</span>
+          </div>
+          <div class="notif-body">
+            <div class="confirm-msg">${n.message}</div>
+            <div class="detail-grid">
+              <div class="dg"><span>🏠 NGO Name</span><strong>${ngo?.name || 'N/A'}</strong></div>
+              <div class="dg"><span>📞 NGO Contact</span><strong>${ngo?.contact || 'N/A'}</strong></div>
+              <div class="dg"><span>⚖️ Quantity</span><strong>${n.quantity || 0} nos</strong></div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Accept food ──
+    async function acceptFood(notifId, foodId) {
+      if (!confirm('Accept this food donation? The donor will be notified immediately.')) return;
+      try {
+        const res = await apiFetch('/api/notifications/accept', {
+          method: 'POST',
+          body:   JSON.stringify({ ngoId: currentUser._id, foodId, notificationId: notifId })
+        });
+        showToast(`✅ Food accepted! Donor ${res.donor?.name} has been notified.`);
+        await doRefresh();
+      } catch (e) {
+        showToast('❌ ' + (e.message || 'Could not accept. May already be taken.'), 'error');
+      }
+    }
+
+    // ── Logout ──
+    function doLogout() {
+      currentUser = null;
+      if (pollTimer) clearInterval(pollTimer);
+      document.getElementById('login-view').classList.remove('hidden');
+      document.getElementById('notif-view').classList.add('hidden');
+      document.getElementById('phone-input').value = '';
+      document.getElementById('login-error').textContent = '';
+    }
+
+    // ── Auto-fill saved phone on page load ──
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('zhs_phone');
+      if (saved) {
+        document.getElementById('phone-input').value = saved;
+      }
+    });
+  </script>
+</body>
+</html>

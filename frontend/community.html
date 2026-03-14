@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Community Network – ZeroHungerSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Zero<span>Hunger</span>Sync</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="register.html">Register</a></li>
+      <li><a href="community.html" class="active">Community</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <li><a href="ngos.html">NGOs</a></li>
+    </ul>
+    <div class="nav-toggle" onclick="toggleNav()">☰</div>
+  </nav>
+
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <span class="section-tag">Active Members</span>
+      <h1>Community Network</h1>
+      <p>All registered donors and NGOs in the ZeroHungerSync network.</p>
+    </div>
+  </section>
+
+  <section class="community-section">
+    <div class="container">
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterUsers('all', this)">All Members</button>
+        <button class="filter-btn" onclick="filterUsers('donor', this)">🍱 Donors</button>
+        <button class="filter-btn" onclick="filterUsers('ngo', this)">🏠 NGOs</button>
+        <div class="filter-search">
+          <input type="text" id="search-input" placeholder="Search by name…" oninput="searchUsers()"/>
+        </div>
+      </div>
+
+      <div class="community-summary" id="community-summary">
+        <div class="summary-chip">Loading…</div>
+      </div>
+
+      <div class="community-grid" id="community-grid">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading network…</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-brand">Zero<span>Hunger</span>Sync</div>
+    <p>Connecting surplus food with hungry hearts.</p>
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="register.html">Register</a>
+      <a href="community.html">Community</a>
+      <a href="ngos.html">NGOs</a>
+    </div>
+    <p class="footer-copy">© 2026 ZeroHungerSync. Built to fight hunger.</p>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    let allUsers = [];
+    let currentFilter = 'all';
+
+    async function loadCommunity() {
+      try {
+        allUsers = await apiFetch('/api/users');
+        renderUsers(allUsers);
+        updateSummary(allUsers);
+      } catch (e) {
+        document.getElementById('community-grid').innerHTML =
+          '<p class="empty-state">⚠️ Could not connect to server. Make sure the backend is running.</p>';
+      }
+    }
+
+    function updateSummary(users) {
+      const activeDonors = users.filter(u => u.role === 'donor' && u.foodStatus !== 'LOCKED' && u.foodStatus !== 'COLLECTED');
+      const donors = activeDonors.length;
+      const ngos = users.filter(u => u.role === 'ngo').length;
+      const available = users.filter(u => u.foodStatus === 'AVAILABLE').length;
+      document.getElementById('community-summary').innerHTML = `
+        <div class="summary-chip">👥 ${users.length} Members</div>
+        <div class="summary-chip donor-chip">🍱 ${donors} Donors</div>
+        <div class="summary-chip ngo-chip">🏠 ${ngos} NGOs</div>
+        <div class="summary-chip avail-chip">✅ ${available} Available</div>
+      `;
+    }
+
+    function renderUsers(users) {
+      const grid = document.getElementById('community-grid');
+      // Hide donors whose food is already LOCKED or COLLECTED
+      users = users.filter(u => !(u.role === 'donor' && (u.foodStatus === 'LOCKED' || u.foodStatus === 'COLLECTED')));
+      if (users.length === 0) {
+        grid.innerHTML = '<p class="empty-state">No members found. <a href="register.html">Be the first to register!</a></p>';
+        return;
+      }
+      grid.innerHTML = users.map(u => `
+        <div class="community-card ${u.role}">
+          <div class="card-header">
+            <div class="card-avatar">${u.role === 'donor' ? '🍱' : '🏠'}</div>
+            <div class="card-role-badge ${u.role}">${u.role === 'donor' ? 'Food Donor' : 'NGO'}</div>
+          </div>
+          <h3 class="card-name">${u.name}</h3>
+          <div class="card-info">
+            <div class="card-info-row">
+              <span class="info-icon">📞</span>
+              <span>${u.contact}</span>
+            </div>
+            ${u.location?.lat ? `
+            <div class="card-info-row">
+              <span class="info-icon">📍</span>
+              <span>${u.location.lat.toFixed(4)}, ${u.location.lng.toFixed(4)}</span>
+            </div>` : ''}
+            ${u.role === 'donor' ? `
+            <div class="card-info-row">
+              <span class="info-icon">🍽️</span>
+              <span>${u.foodType || 'Not specified'} · ${u.quantity || 0} nos</span>
+            </div>
+            <div class="card-info-row">
+              <span class="info-icon">⏰</span>
+              <span>${u.goodTill ? new Date(u.goodTill).toLocaleString() : 'Not specified'}</span>
+            </div>
+            <div class="food-status-badge status-${(u.foodStatus || 'available').toLowerCase()}">${u.foodStatus || 'AVAILABLE'}</div>
+            ` : ''}
+          </div>
+          <div class="card-joined">Joined ${new Date(u.createdAt).toLocaleDateString()}</div>
+        </div>
+      `).join('');
+    }
+
+    function filterUsers(filter, btn) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    function searchUsers() {
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      let filtered = allUsers.filter(u => !(u.role === 'donor' && (u.foodStatus === 'LOCKED' || u.foodStatus === 'COLLECTED')));
+      if (currentFilter !== 'all') filtered = filtered.filter(u => u.role === currentFilter);
+      if (search) filtered = filtered.filter(u => u.name.toLowerCase().includes(search));
+      renderUsers(filtered);
+    }
+
+    loadCommunity();
+    setInterval(loadCommunity, 30000); // refresh every 30s
+  </script>
+</body>
+</html>

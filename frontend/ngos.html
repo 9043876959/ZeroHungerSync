@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NGOs – ZeroHungerSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    #ngo-map {
+      width: 100%;
+      height: 520px;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    .leaflet-popup-content-wrapper {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .leaflet-popup-tip { background: var(--card-bg); }
+
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .legend-dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid white;
+      flex-shrink: 0;
+    }
+    .legend-dot.registered { background: #16a34a; }
+    .legend-dot.chennai    { background: #2563eb; }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      padding: 0.65rem 1.4rem;
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-family: var(--font-body);
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: -1px;
+    }
+    .tab-btn.active  { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+    .tab-count {
+      display: inline-block;
+      padding: 0.1rem 0.5rem;
+      background: var(--card-bg);
+      border-radius: 999px;
+      font-size: 0.72rem;
+      margin-left: 0.35rem;
+    }
+
+    .search-bar { margin-bottom: 1.5rem; }
+    .search-bar input {
+      width: 100%;
+      max-width: 420px;
+      padding: 0.65rem 1rem;
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-bar input:focus { border-color: var(--accent); }
+
+    .chennai-badge {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      background: rgba(37,99,235,0.15);
+      color: #60a5fa;
+      border-radius: 5px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+    .registered-badge {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      background: rgba(74,222,128,0.15);
+      color: var(--accent);
+      border-radius: 5px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+    .fetch-status {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      padding: 0.6rem 1rem;
+      background: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">Zero<span>Hunger</span>Sync</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="register.html">Register</a></li>
+      <li><a href="community.html">Community</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <li><a href="ngos.html" class="active">NGOs</a></li>
+    </ul>
+    <div class="nav-toggle" onclick="toggleNav()">☰</div>
+  </nav>
+
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <span class="section-tag">Chennai NGO Network</span>
+      <h1>NGOs in Chennai</h1>
+      <p>All NGOs in Chennai — both registered on ZeroHungerSync and real organizations from OpenStreetMap.</p>
+    </div>
+  </section>
+
+  <section class="ngos-section">
+    <div class="container">
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot registered"></div>
+          <span>Registered on ZeroHungerSync</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot chennai"></div>
+          <span>NGOs across Chennai (OpenStreetMap)</span>
+        </div>
+      </div>
+
+      <div id="ngo-map"></div>
+
+      <div id="fetch-status" class="fetch-status">
+        <div class="spinner"></div>
+        <span>Fetching NGOs across Chennai…</span>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('all', this)">
+          All NGOs <span class="tab-count" id="count-all">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('registered', this)">
+          ✅ Registered on ZHS <span class="tab-count" id="count-registered">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('chennai', this)">
+          📍 Chennai NGOs <span class="tab-count" id="count-chennai">0</span>
+        </button>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="ngo-search" placeholder="🔍 Search NGOs by name…" oninput="filterNGOs()"/>
+      </div>
+
+      <div class="ngo-grid" id="ngo-grid">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading…</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-brand">Zero<span>Hunger</span>Sync</div>
+    <p>Connecting surplus food with hungry hearts.</p>
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="register.html">Register</a>
+      <a href="community.html">Community</a>
+      <a href="ngos.html">NGOs</a>
+    </div>
+    <p class="footer-copy">© 2026 ZeroHungerSync. Built to fight hunger.</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let map;
+    let registeredNGOs = [];  // from our MongoDB
+    let chennaiNGOs    = [];  // from OpenStreetMap Overpass API
+    let currentTab = 'all';
+
+    const CHENNAI_CENTER = [13.0827, 80.2707];
+    // Wider bounding box: south, west, north, east
+    const CHENNAI_BBOX = '12.75,79.95,13.30,80.55';
+
+    // ── Icons ──
+    function makeIcon(type) {
+      const bg    = type === 'registered' ? '#16a34a' : '#2563eb';
+      const emoji = type === 'registered' ? '🏠' : '🤝';
+      return L.divIcon({
+        html: `<div style="background:${bg};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:17px;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.4)">${emoji}</div>`,
+        className: '',
+        iconSize: [36, 36],
+        iconAnchor: [18, 18]
+      });
+    }
+
+    // ── Init Leaflet map centred on Chennai ──
+    function initMap() {
+      map = L.map('ngo-map').setView(CHENNAI_CENTER, 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+    }
+
+    // ── Place markers on map ──
+    function addMarkers(ngos, type) {
+      ngos.forEach(ngo => {
+        const lat = ngo.lat ?? ngo.location?.lat;
+        const lng = ngo.lng ?? ngo.location?.lng;
+        if (!lat || !lng) return;
+
+        const badge = type === 'registered'
+          ? '<span style="background:#16a34a22;color:#4ade80;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px">ZHS</span>'
+          : '<span style="background:#2563eb22;color:#60a5fa;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px">Chennai</span>';
+
+        L.marker([lat, lng], { icon: makeIcon(type) })
+          .addTo(map)
+          .bindPopup(`
+            <div style="padding:10px;min-width:190px;font-family:sans-serif">
+              <strong style="font-size:14px">${ngo.name}</strong>${badge}<br/><br/>
+              ${(ngo.contact || ngo.phone) ? `<span style="font-size:12px;opacity:0.8">📞 ${ngo.contact || ngo.phone}</span><br/>` : ''}
+              ${ngo.address ? `<span style="font-size:12px;opacity:0.8">📍 ${ngo.address}</span><br/>` : ''}
+              ${ngo.website ? `<a href="${ngo.website}" target="_blank" style="font-size:12px;color:#4ade80">🌐 Website</a><br/>` : ''}
+              <a href="https://maps.google.com/?q=${lat},${lng}" target="_blank"
+                 style="color:#4ade80;font-size:12px;margin-top:4px;display:inline-block">
+                View on Google Maps →
+              </a>
+            </div>
+          `);
+      });
+    }
+
+    // ── Fetch real NGOs in Chennai via Overpass API (free, no key needed) ──
+    async function fetchChennaiNGOs() {
+      const query = `
+        [out:json][timeout:30];
+        (
+          node["office"="ngo"](${CHENNAI_BBOX});
+          node["office"="charity"](${CHENNAI_BBOX});
+          node["office"="association"](${CHENNAI_BBOX});
+          node["amenity"="social_facility"](${CHENNAI_BBOX});
+          node["amenity"="community_centre"](${CHENNAI_BBOX});
+          node["amenity"="shelter"](${CHENNAI_BBOX});
+          way["office"="ngo"](${CHENNAI_BBOX});
+          way["office"="charity"](${CHENNAI_BBOX});
+          way["amenity"="social_facility"](${CHENNAI_BBOX});
+          way["amenity"="community_centre"](${CHENNAI_BBOX});
+        );
+        out center tags;
+      `;
+
+      const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Overpass API error ' + res.status);
+      const data = await res.json();
+
+      return data.elements
+        .filter(el => el.tags?.name)
+        .map(el => ({
+          id:      'osm_' + el.id,
+          name:    el.tags.name,
+          address: buildAddress(el.tags),
+          phone:   el.tags.phone || el.tags['contact:phone'] || null,
+          website: el.tags.website || el.tags['contact:website'] || null,
+          lat:     el.lat  ?? el.center?.lat,
+          lng:     el.lon  ?? el.center?.lon,
+          type:    'chennai'
+        }))
+        .filter(n => n.lat && n.lng);
+    }
+
+    function buildAddress(tags) {
+      const parts = [
+        tags['addr:housename'],
+        tags['addr:street'],
+        tags['addr:suburb'],
+        tags['addr:city'] || 'Chennai'
+      ].filter(Boolean);
+      return parts.length ? parts.join(', ') : 'Chennai';
+    }
+
+    // ── Render NGO cards ──
+    function renderCards(list) {
+      const grid = document.getElementById('ngo-grid');
+      if (list.length === 0) {
+        grid.innerHTML = '<p class="empty-state">No NGOs found matching your search.</p>';
+        return;
+      }
+
+      grid.innerHTML = list.map(ngo => {
+        const isReg    = ngo.type === 'registered';
+        const lat      = ngo.lat ?? ngo.location?.lat;
+        const lng      = ngo.lng ?? ngo.location?.lng;
+        const contact  = ngo.contact || ngo.phone;
+        const address  = ngo.address
+          || (ngo.location?.lat
+              ? `${Number(ngo.location.lat).toFixed(4)}, ${Number(ngo.location.lng).toFixed(4)}`
+              : 'Chennai');
+
+        return `
+          <div class="ngo-card">
+            <div class="ngo-card-icon">${isReg ? '🏠' : '🤝'}</div>
+            <h3>
+              ${ngo.name}
+              ${isReg
+                ? '<span class="registered-badge">ZHS</span>'
+                : '<span class="chennai-badge">Chennai</span>'}
+            </h3>
+            <div class="ngo-info">
+              ${contact ? `
+              <div class="ngo-info-row">
+                <span>📞</span>
+                <a href="tel:${contact}">${contact}</a>
+              </div>` : ''}
+              <div class="ngo-info-row">
+                <span>📍</span>
+                <span>${address}</span>
+              </div>
+              ${ngo.website ? `
+              <div class="ngo-info-row">
+                <span>🌐</span>
+                <a href="${ngo.website}" target="_blank">Visit Website</a>
+              </div>` : ''}
+              ${lat ? `
+              <div class="ngo-info-row">
+                <span>🗺️</span>
+                <a href="https://maps.google.com/?q=${lat},${lng}" target="_blank">Google Maps</a>
+              </div>` : ''}
+              ${isReg ? `
+              <div class="ngo-info-row">
+                <span>📅</span>
+                <span>Registered ${new Date(ngo.createdAt).toLocaleDateString()}</span>
+              </div>` : ''}
+            </div>
+            ${lat ? `
+            <button class="btn-map-focus" onclick="focusNGO(${lat},${lng})">
+              🗺️ Show on Map
+            </button>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ── Tab & search filtering ──
+    function switchTab(tab, btn) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterNGOs();
+    }
+
+    function filterNGOs() {
+      const q = document.getElementById('ngo-search').value.toLowerCase();
+      let list =
+        currentTab === 'registered' ? [...registeredNGOs]  :
+        currentTab === 'chennai'    ? [...chennaiNGOs]     :
+        [...registeredNGOs, ...chennaiNGOs];
+
+      if (q) list = list.filter(n => n.name.toLowerCase().includes(q));
+      renderCards(list);
+    }
+
+    function focusNGO(lat, lng) {
+      map.setView([lat, lng], 15);
+      window.scrollTo({ top: document.getElementById('ngo-map').offsetTop - 80, behavior: 'smooth' });
+    }
+
+    // ── Master load ──
+    async function loadAll() {
+      initMap();
+
+      // 1. Registered NGOs from our backend
+      try {
+        const data = await apiFetch('/api/users/ngos');
+        registeredNGOs = data.map(n => ({ ...n, type: 'registered' }));
+        addMarkers(registeredNGOs, 'registered');
+      } catch (e) {
+        registeredNGOs = [];
+      }
+
+      // 2. Real Chennai NGOs from OpenStreetMap Overpass
+      try {
+        chennaiNGOs = await fetchChennaiNGOs();
+        addMarkers(chennaiNGOs, 'chennai');
+        document.getElementById('fetch-status').innerHTML =
+          `✅ Loaded <strong>${chennaiNGOs.length}</strong> NGOs from Chennai (OpenStreetMap) + <strong>${registeredNGOs.length}</strong> registered on ZeroHungerSync`;
+      } catch (e) {
+        chennaiNGOs = [];
+        document.getElementById('fetch-status').innerHTML =
+          '⚠️ Could not fetch Chennai NGOs from OpenStreetMap. Showing registered NGOs only.';
+        console.warn('Overpass error:', e);
+      }
+
+      // Update tab counts
+      document.getElementById('count-all').textContent        = registeredNGOs.length + chennaiNGOs.length;
+      document.getElementById('count-registered').textContent = registeredNGOs.length;
+      document.getElementById('count-chennai').textContent    = chennaiNGOs.length;
+
+      // Render cards
+      filterNGOs();
+    }
+
+    loadAll();
+  </script>
+</body>
+</html>
+
